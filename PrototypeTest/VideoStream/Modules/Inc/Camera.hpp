@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <share_print.hpp>
+#include <mutex>
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
@@ -14,6 +15,8 @@ class Camera{
 
     private:
     VideoCapture cap;
+    std::mutex camMtx;
+
 
     Camera(){
         share_print("open the camera!");
@@ -30,9 +33,10 @@ class Camera{
         return &instance;
     }
 
-    //get frame from camera
+    //This function get an frame pointer from heap
     Mat getFrame(){
         Mat frame;
+        std::lock_guard<std::mutex> gaurd(this->camMtx);
         cap>>frame;
         return frame;
     }

@@ -12,6 +12,5 @@ int main (){
     Camera* cam = Camera::getInstance();
     cv::Mat frame = cam->getFrame();
     share_print(std::to_string(frame.dims));
-
     return 1;
 }

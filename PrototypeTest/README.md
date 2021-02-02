@@ -1,12 +1,7 @@
 ## this folder contains some of prototype to struct this project
 
+## Note
 
-## platform
+- opencv 4.2.0
+- using boost circular_buffer for image buffer
 
-Mac OS Bigsur 11.4
-
-## package required
-
-- opencv
-- cmake
-- thread
