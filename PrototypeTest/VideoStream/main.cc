@@ -1,16 +1,23 @@
+#include <Detector.hpp>
 #include <Camera.hpp>
-#include <share_print.hpp>
-
-#include <string>
-
-#include <opencv2/core.hpp>
-
+#include <myUtils.hpp>
+#include <ServerAndroid.hpp>
 
 using namespace std;
 
 int main (){
-    Camera* cam = Camera::getInstance();
-    cv::Mat frame = cam->getFrame();
-    share_print(std::to_string(frame.dims));
-    return 1;
+    myUtils::share_print("hellow");
+    Detector* detector = new Detector();
+    ServerAndroid* server = new ServerAndroid();
+
+    detector->registerCamera(Camera::getInstance());
+    server->registerDetector(detector);
+
+    detector->start();
+    server->start();
+
+    detector->join();
+    server->join();
+    
+    myUtils::share_print("finished!");
 }

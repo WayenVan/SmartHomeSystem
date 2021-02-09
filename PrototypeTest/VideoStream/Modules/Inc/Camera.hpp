@@ -1,12 +1,14 @@
-#ifndef CAMERA_HPP
-#define CAMERA_HPP
+#ifndef _CAMERA_HPP_
+#define _CAMERA_HPP_
 
 #include <stdlib.h>
-#include <share_print.hpp>
+#include <myUtils.hpp>
 #include <mutex>
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
+
+#define CAMERA_DEVICE_NUMBER 0
 
 //An simple Wrapper of camera
 using namespace cv;
@@ -19,21 +21,22 @@ class Camera{
 
 
     Camera(){
-        share_print("open the camera!");
-        cap.open(0);
+        myUtils::share_print("open the camera!");
+        cap.open(CAMERA_DEVICE_NUMBER);
         if(!cap.isOpened()){
-            share_print("camera open failed!!!");
+            myUtils::share_print("camera open failed!!!");
+            exit(0);
         }
     }
 
     public:
-    //singleton
+    //singleton parttern, the connection between application and camera exist only one
     static Camera* getInstance(){
         static Camera instance;
         return &instance;
     }
 
-    //This function get an frame pointer from heap
+    //This Method get a frame from camera thread-safely
     Mat getFrame(){
         Mat frame;
         std::lock_guard<std::mutex> gaurd(this->camMtx);
