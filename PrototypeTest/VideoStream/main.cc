@@ -19,5 +19,8 @@ int main (){
     detector->join();
     server->join();
     
+    delete detector;
+    delete server;
+    
     myUtils::share_print("finished!");
 }

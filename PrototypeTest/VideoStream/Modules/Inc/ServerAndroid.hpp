@@ -4,6 +4,10 @@
 #include <CppThread.h>
 #include <Detector.hpp>
 
+//frame's resolution to send
+#define FRAME_SEND_LENGTH 
+#define FRAME_SEND_WIDTH 
+
 class ServerAndroid: public CppThread{
 
     private:

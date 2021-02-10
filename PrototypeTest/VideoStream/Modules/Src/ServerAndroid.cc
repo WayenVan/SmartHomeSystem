@@ -1,5 +1,6 @@
 #include <ServerAndroid.hpp>
 #include <myUtils.hpp>
+#include <myType.hpp>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -11,8 +12,6 @@
 #include <opencv2/core.hpp>
 
 #include <thread>
-
-
 
 void ServerAndroid::run(){
 
@@ -47,60 +46,65 @@ void ServerAndroid::run(){
     char host[NI_MAXHOST];
     char svc[NI_MAXSERV];
 
-    int clientSocket = accept(listening, (sockaddr*)&client, &clientSize);
-    if(clientSocket == -1){
-        myUtils::share_cerr("problem with client connecting!");
-        exit(0);
-    }
-
-    //close the listening socket
-    close(listening);
-
-    //print connection 
-    memset(host, 0, NI_MAXHOST);
-    memset(svc, 0, NI_MAXSERV);
-
-    int result = getnameinfo(
-        (sockaddr*)&client,
-        sizeof(client),
-        host,
-        NI_MAXHOST,
-        svc,
-        NI_MAXSERV,
-        0
-    );
-
-    if(result){
-        std::string info ="host:"+std::string(host)+"server:"+std::string(svc);
-        myUtils::share_print(info);
-    }
-
-    char buf[4096];
-    //while receiving display message, echo message
+    //accept loop
     while(true){
-        memset(buf,0, 4096);
-        int bytesRecv = recv(clientSocket, buf, 4096, 0);
-        if(bytesRecv == -1){
-            myUtils::share_cerr("there was a connection issue");
-            break;
-        }
-        if(bytesRecv == 0){
-            myUtils::share_print("the client disconnected");
-            break;
+        int clientSocket = accept(listening, (sockaddr*)&client, &clientSize);
+        if(clientSocket == -1){
+            myUtils::share_cerr("problem with client connecting!");
+            exit(0);
         }
 
-        cv::Mat frame;
-        if(this->detector->bufferPop(frame)){
-            char temp[1024];
-            sprintf(temp, "wo hao cong ming %ld \n", frame.dims);
-            send(clientSocket, temp, sizeof(temp), 0); 
-        }
-        else{
-            char temp[1024] = "did not get frame!";
-            send(clientSocket, temp, sizeof(temp)+1, 0); 
+        //close the listening socket
+        //close(listening);
+
+        //print connection 
+        memset(host, 0, NI_MAXHOST);
+        memset(svc, 0, NI_MAXSERV);
+
+        int result = getnameinfo(
+            (sockaddr*)&client,
+            sizeof(client),
+            host,
+            NI_MAXHOST,
+            svc,
+            NI_MAXSERV,
+            0
+        );
+
+        if(result){
+            std::string info ="host:"+std::string(host)+"server:"+std::string(svc);
+            myUtils::share_print(host);
         }
 
-        std::this_thread::sleep_for (std::chrono::milliseconds(30));
+        char buf[4096];
+        //while receiving display message, echo message
+        while(true){
+            //clear buffer
+            memset(buf,0, 4096);
+            int bytesRecv = recv(clientSocket, buf, 4096, 0);
+            if(bytesRecv == -1){
+                myUtils::share_cerr("there was a connection issue");
+                break;
+            }
+            if(bytesRecv == 0){
+                myUtils::share_print("the client disconnected");
+                break;
+            }
+
+            //send frame
+            cv::Mat frame;
+            if(this->detector->bufferPop(frame)){
+                char temp[1024];
+                sprintf(temp, "frame length: %d frame width: %d\n", frame.cols, frame.rows);
+                send(clientSocket, temp, sizeof(temp), 0); 
+            }
+            else{
+                char temp[1024] = "did not get frame!";
+                send(clientSocket, temp, sizeof(temp)+1, 0); 
+            }
+            std::this_thread::sleep_for (std::chrono::milliseconds(30));
+        }
+        //close socket
+        close(clientSocket);
     }
-    //close socket
 }

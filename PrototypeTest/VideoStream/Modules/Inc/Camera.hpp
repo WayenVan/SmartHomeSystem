@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <myUtils.hpp>
 #include <mutex>
+#include <boost/format.hpp>
+#include <stdint.h>
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
@@ -21,12 +23,24 @@ class Camera{
 
 
     Camera(){
-        myUtils::share_print("open the camera!");
-        cap.open(CAMERA_DEVICE_NUMBER);
+        myUtils::share_print("opening the camera...");
+        this->cap.open(CAMERA_DEVICE_NUMBER);
         if(!cap.isOpened()){
             myUtils::share_print("camera open failed!!!");
             exit(0);
+        }else{
+            myUtils::share_print("camera open success");
+
         }
+
+        int width = static_cast<int>(this->cap.get(CAP_PROP_FRAME_WIDTH));
+        int length = static_cast<int>(this->cap.get(CAP_PROP_FRAME_HEIGHT));
+        boost::format info("camera resolution: width %1%, height %2%");
+        info % width;
+        info % length;
+
+        myUtils::share_print(info.str());
+
     }
 
     public:
