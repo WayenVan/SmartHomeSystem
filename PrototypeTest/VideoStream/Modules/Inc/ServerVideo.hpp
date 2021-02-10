@@ -6,22 +6,24 @@
 
 //frame's resolution to send
 #define FRAME_SEND_LENGTH 
-#define FRAME_SEND_WIDTH 
+#define FRAME_SEND_WIDTH  
 
-class ServerAndroid: public CppThread{
+class ServerVideo: public CppThread{
 
     private:
     Detector* detector;
     void run();
     
     public:
-    ServerAndroid(){
+    ServerVideo(){
     }
-    ~ServerAndroid() {}
+    ~ServerVideo() {}
 
     void registerDetector(Detector* detector){
         this->detector = detector;
     }
+
+    //method to handle instruction
    
     
 };

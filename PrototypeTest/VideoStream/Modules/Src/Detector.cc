@@ -14,6 +14,8 @@ void Detector::run(){
     cv::Mat frame;
     while(1){
         frame = this->camera->getFrame();
+        cv::resize(frame, frame, cv::Size(640, 360));
+        
         this->bufferPush(frame);
 
         std::this_thread::sleep_for (std::chrono::milliseconds(30));         

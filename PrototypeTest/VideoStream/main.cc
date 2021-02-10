@@ -1,14 +1,14 @@
 #include <Detector.hpp>
 #include <Camera.hpp>
 #include <myUtils.hpp>
-#include <ServerAndroid.hpp>
+#include <ServerVideo.hpp>
 
 using namespace std;
 
 int main (){
-    myUtils::share_print("hellow");
+    myUtils::share_print("hello");
     Detector* detector = new Detector();
-    ServerAndroid* server = new ServerAndroid();
+    ServerVideo* server = new ServerVideo();
 
     detector->registerCamera(Camera::getInstance());
     server->registerDetector(detector);
@@ -21,6 +21,6 @@ int main (){
     
     delete detector;
     delete server;
-    
+
     myUtils::share_print("finished!");
 }
