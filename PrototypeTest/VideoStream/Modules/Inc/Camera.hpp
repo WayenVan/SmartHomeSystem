@@ -42,6 +42,9 @@ class Camera{
         myUtils::share_print(info.str());
 
     }
+    ~Camera(){
+        cap.release();
+    }
 
     public:
     //singleton parttern, the connection between application and camera exist only one

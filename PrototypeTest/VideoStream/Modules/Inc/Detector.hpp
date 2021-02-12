@@ -11,7 +11,7 @@
 
 #include <Camera.hpp>
 
-#define FRAME_BUFFER_MAX 200
+#define FRAME_BUFFER_MAX 25
 
 class Detector: public CppThread{
 

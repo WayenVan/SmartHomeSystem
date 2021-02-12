@@ -86,12 +86,15 @@ void ServerVideo::run(){
         //recieve buffer
         char bufRecv[1024];
         std::vector<uchar> buffer;
+        int size = 0;
+        cv::Mat frame;
         //while receiving display message, echo message
         while(true){
 
-            //clear buffer
+            //clear buffer and restart transmission
             memset(bufRecv,0, 1024);
             buffer.clear();
+            size = 0;
 
             //recieve data from client and check if it is connected
             int bytesRecv = recv(clientSocket, bufRecv, 4096, 0);
@@ -105,17 +108,29 @@ void ServerVideo::run(){
             }
 
             //send frame to client
-            cv::Mat frame;
             if(this->detector->bufferPop(frame)){
-
+                
                 cv::imencode(".jpg", frame, buffer);
                 //sprintf(bufSendPtr.get(), "frame length: %d frame width: %d, encode size: %lu\n", frame.cols, frame.rows, buffer.size());
-                //send frame
+
+                //firstly send image size
+                size = buffer.size();
+                if(send(clientSocket, &size, sizeof(int), 0)== -1){
+                    myUtils::share_print("problem when sending information");
+                    break;
+                }
+
+                //secondly send the image
                 if(send(clientSocket, reinterpret_cast<char*>(buffer.data()), buffer.size(), 0)== -1){
                     myUtils::share_print("problem when sending information");
                     break;
                 }
                 myUtils::share_print("send an image, buffer size: "+std::to_string(buffer.size()));
+            }else{
+                if(send(clientSocket, &size, sizeof(int), 0)== -1){
+                    myUtils::share_print("problem when sending information");
+                    break;
+                }
             }
             
             std::this_thread::sleep_for (std::chrono::milliseconds(30));
