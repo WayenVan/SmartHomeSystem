@@ -3,10 +3,10 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**",
-                "/usr/local/include/opencv4/",
-                "/Users/wayenvan/Desktop/RealtimeEmbededCoding/PrototypeTest/VideoStream/Util/",
-                "/Users/wayenvan/Desktop/RealtimeEmbededCoding/PrototypeTest/VideoStream/Modules/Inc/"
+                "/usr/local/include/opencv4/**",
+                "${workspaceFolder}/Util/**",
+                "${workspaceFolder}/Modules/Inc/**",
+                "/opt/local/include/**"
             ],
             "defines": [],
             "macFrameworkPath": [
@@ -15,7 +15,11 @@
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64"
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
         }
     ],
     "version": 4
