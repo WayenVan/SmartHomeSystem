@@ -3,37 +3,51 @@
 
 #include <vector>
 
-#include <CppThread.h>
+#include <CppThread.hpp>
 #include <boost/circular_buffer.hpp>
 #include <mutex>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include <Camera.hpp>
+#include <camera.hpp>
 
-#define FRAME_BUFFER_MAX 25
+namespace wayenvan{
+
 
 class Detector: public CppThread{
 
-    typedef boost::circular_buffer<cv::Mat> MatBuffer;
+    typedef boost::circular_buffer<cv::Mat> FrameBuffer;
 
     private:
     Camera *camera; 
 
     //mutex to protect buffer
-    std::mutex bufferMtx;
-    MatBuffer* buffer;
+    std::mutex frame_buffer_mutex_;
+    FrameBuffer* frame_buffer_;
+
+    const int kFrameBufferMax_;
+
+    //frame compress 
+    const int kFrameCompressHeight_;
+    const int kFrameCompressWidth_;
 
     //impelement thread run function
     void run();
 
     public:
     //default constructor
-    Detector(){
-        this->buffer = new MatBuffer(FRAME_BUFFER_MAX);
+    Detector(const int& max_buffer = 20, const int& frame_compress_height=360, const int& frame_compress_width = 640):
+        camera(nullptr), 
+        frame_buffer_mutex_{}, 
+        frame_buffer_(nullptr), 
+        kFrameBufferMax_(max_buffer),
+        kFrameCompressWidth_(frame_compress_width),
+        kFrameCompressHeight_(frame_compress_height)
+    {
+        this->frame_buffer_ = new FrameBuffer(kFrameBufferMax_);
     }
     ~Detector(){
-        delete this->buffer;
+        delete this->frame_buffer_;
     }
 
     //need to regsister 
@@ -41,10 +55,11 @@ class Detector: public CppThread{
         this->camera = camera;
     }
 
-    //save frame into buffer
-    void bufferPush(cv::Mat& frame);
-    //get frame from buffer. return true if success
+    //save frame into frame_buffer_
+    void bufferPush(const cv::Mat& frame);
+    //get frame from frame_buffer_. return true if success
     bool bufferPop(cv::Mat& frame);
 };
+}
 
 #endif

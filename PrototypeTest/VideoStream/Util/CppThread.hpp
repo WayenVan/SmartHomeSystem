@@ -1,5 +1,5 @@
-#ifndef __CPP_THREAD_H_
-#define __CPP_THREAD_H_
+#ifndef __CPP_THREAD_HPP_
+#define __CPP_THREAD_HPP_
 
 /**
  * GNU GENERAL PUBLIC LICENSE

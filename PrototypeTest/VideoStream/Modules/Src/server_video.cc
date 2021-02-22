@@ -1,6 +1,5 @@
-#include <ServerVideo.hpp>
-#include <myUtils.hpp>
-#include <myType.hpp>
+#include <server_video.hpp>
+#include <my_utils.hpp>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -18,6 +17,8 @@
 
 #include <thread>
 
+namespace wayenvan{
+
 void ServerVideo::run(){
 
     //create socket
@@ -30,14 +31,16 @@ void ServerVideo::run(){
     //Bind the socket to a IP/port
     sockaddr_in hint;
     hint.sin_family = AF_INET;
-    hint.sin_port = htons(12345);
-    inet_pton(AF_INET, "0.0.0.0", &hint.sin_addr);
+    hint.sin_port = htons(this->kServerPort_);
+    inet_pton(AF_INET, this->kServerIp_, &hint.sin_addr);
 
-    if(bind(listening, (sockaddr*)&hint, sizeof(hint))==-1)
+
+    if(::bind(listening, (sockaddr*)&hint, sizeof(hint)) == -1)
     {
         myUtils::share_cerr("can not bind to IP/port");
         exit(0);
     }
+
 
     //mark the socket for listening in
     if(listen(listening, SOMAXCONN)==-1){
@@ -138,4 +141,6 @@ void ServerVideo::run(){
         //close socket
         close(clientSocket);
     }
+}
+
 }

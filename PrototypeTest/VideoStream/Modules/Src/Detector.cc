@@ -1,43 +1,50 @@
-#include <Detector.hpp>
+#include <detector.hpp>
 #include <stdlib.h>
 #include <thread>
-#include <myUtils.hpp>
+#include <my_utils.hpp>
+
+namespace wayenvan{
 
 //Detector thread
 void Detector::run(){
 
     //check the camera
-    if(this->camera == NULL){
+    if(camera == NULL){
         myUtils::share_cerr("the camera in detector did not register properly");
         exit(0);
     }
     cv::Mat frame;
     while(1){
-        frame = this->camera->getFrame();
-        cv::resize(frame, frame, cv::Size(640, 360));
+        if(!camera->getFrame(frame)){
+            // if the frame return false
+            continue;
+        }
+        //compress image
+        cv::resize(frame, frame, cv::Size(kFrameCompressWidth_, kFrameCompressHeight_));
         
-        this->bufferPush(frame);
+        bufferPush(frame);
 
         std::this_thread::sleep_for (std::chrono::milliseconds(30));         
     }
 }
 
 bool Detector::bufferPop(cv::Mat& frame){
-    std::lock_guard<std::mutex> guard(this->bufferMtx);
+    std::lock_guard<std::mutex> guard(frame_buffer_mutex_);
     //the buffer is full
-    if(this->buffer->empty()) return false; 
+    if(frame_buffer_->empty()) return false; 
      
     //pop a frame from buffer
-    frame = this->buffer->front();
-    this->buffer->pop_front();
+    frame = frame_buffer_->front();
+    frame_buffer_->pop_front();
     return true;
 }
 
-void Detector::bufferPush(cv::Mat& frame){
-    std::lock_guard<std::mutex> guard(this->bufferMtx);
-    this->buffer->push_back(frame);
+void Detector::bufferPush(const cv::Mat& frame){
+    std::lock_guard<std::mutex> guard(frame_buffer_mutex_);
+    frame_buffer_->push_back(frame);
 }
 
+}
 
 
 

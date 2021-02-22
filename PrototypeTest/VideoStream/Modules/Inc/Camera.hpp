@@ -2,7 +2,7 @@
 #define _CAMERA_HPP_
 
 #include <stdlib.h>
-#include <myUtils.hpp>
+#include <my_utils.hpp>
 #include <mutex>
 #include <boost/format.hpp>
 #include <stdint.h>
@@ -10,22 +10,31 @@
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 
-#define CAMERA_DEVICE_NUMBER 0
 
 //An simple Wrapper of camera
-using namespace cv;
+
+
+namespace wayenvan{
 
 class Camera{
 
+    typedef cv::Mat Mat;
+    typedef cv::VideoCapture VideoCapture;
+
     private:
-    VideoCapture cap;
-    std::mutex camMtx;
+    VideoCapture video_capture_;
+    std::mutex camera_mutex_;
 
+    const int kCameraDeviceNumber_;
 
-    Camera(){
+    Camera(const int& kCameraDeviceNumber = 0):
+        video_capture_{},
+        camera_mutex_{},
+        kCameraDeviceNumber_(kCameraDeviceNumber)
+    {
         myUtils::share_print("opening the camera...");
-        this->cap.open(CAMERA_DEVICE_NUMBER);
-        if(!cap.isOpened()){
+        video_capture_.open(kCameraDeviceNumber_);
+        if(!video_capture_.isOpened()){
             myUtils::share_print("camera open failed!!!");
             exit(0);
         }else{
@@ -33,8 +42,9 @@ class Camera{
 
         }
 
-        int width = static_cast<int>(this->cap.get(CAP_PROP_FRAME_WIDTH));
-        int length = static_cast<int>(this->cap.get(CAP_PROP_FRAME_HEIGHT));
+        int width = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_WIDTH));
+        int length = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_HEIGHT));
+        //print camera information
         boost::format info("camera resolution: width %1%, height %2%");
         info % width;
         info % length;
@@ -43,7 +53,7 @@ class Camera{
 
     }
     ~Camera(){
-        cap.release();
+        video_capture_.release();
     }
 
     public:
@@ -54,14 +64,20 @@ class Camera{
     }
 
     //This Method get a frame from camera thread-safely
-    Mat getFrame(){
+    bool getFrame(Mat& output){
         Mat frame;
-        std::lock_guard<std::mutex> gaurd(this->camMtx);
-        cap>>frame;
-        return frame;
+        std::lock_guard<std::mutex> gaurd(this->camera_mutex_);
+        video_capture_>>frame;
+        if(frame.empty())
+        {
+            return false;
+        }
+        frame.copyTo(output);
+        return true;
     }
 
 };
 
+}
 
 #endif
