@@ -4,6 +4,7 @@
 #include <my_utils.hpp>
 #include <server_video.hpp>
 #include <memory>
+#include <module_exception.hpp>
 
 using namespace std;
 using namespace wayenvan;
@@ -25,7 +26,8 @@ int main (){
 
         detector->join();
         server->join();
-    }catch(const std::exception& e){
+    }catch(const ModuleException& e){
+        myUtils::share_cerr("Error ocurr in "+string(e.get_error_module_name())+":");
         myUtils::share_cerr(e.what());
     }
 

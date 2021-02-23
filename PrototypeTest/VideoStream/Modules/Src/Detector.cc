@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <thread>
 #include <my_utils.hpp>
+#include <module_exception.hpp>
 
 namespace wayenvan{
 
@@ -10,8 +11,8 @@ void Detector::run(){
 
     //check the camera
     if(camera == NULL){
-        myUtils::share_cerr("the camera in detector did not register properly");
-        exit(0);
+        ModuleException e(myUtils::get_type(*this), "the camera is not opened correctly");
+        throw e;
     }
     cv::Mat frame;
     while(1){
@@ -21,9 +22,7 @@ void Detector::run(){
         }
         //compress image
         cv::resize(frame, frame, cv::Size(kFrameCompressWidth_, kFrameCompressHeight_));
-        
         bufferPush(frame);
-
         std::this_thread::sleep_for (std::chrono::milliseconds(30));         
     }
 }

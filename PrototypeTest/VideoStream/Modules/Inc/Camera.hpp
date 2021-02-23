@@ -6,16 +6,17 @@
 #include <mutex>
 #include <boost/format.hpp>
 #include <stdint.h>
+#include <module_exception.hpp>
+#include <typeinfo>
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 
 
-//An simple Wrapper of camera
-
-
 namespace wayenvan{
-
+    
+/** 
+ * @brief a simple wrapper of camera, can be used to get frame */
 class Camera{
 
     typedef cv::Mat Mat;
@@ -27,20 +28,23 @@ class Camera{
 
     const int kCameraDeviceNumber_;
 
+    /** 
+     * @brief the default constructor of the camera
+     * @param kCameraDeviceNumber is the device number of your camera
+     * which can be found in /dev/video[x] */
     Camera(const int& kCameraDeviceNumber = 0):
         video_capture_{},
         camera_mutex_{},
         kCameraDeviceNumber_(kCameraDeviceNumber)
     {
         myUtils::share_print("opening the camera...");
+
         video_capture_.open(kCameraDeviceNumber_);
         if(!video_capture_.isOpened()){
-            myUtils::share_print("camera open failed!!!");
-            exit(0);
-        }else{
-            myUtils::share_print("camera open success");
-
+            ModuleException e(myUtils::get_type(*this), "Can not open camera");
+            throw e;       
         }
+        myUtils::share_print("camera open success");
 
         int width = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_WIDTH));
         int length = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_HEIGHT));
@@ -57,13 +61,14 @@ class Camera{
     }
 
     public:
-    //singleton parttern, the connection between application and camera exist only one
+
+    /**
+     * @brief using singleton mode, always return to the same instance */
     static Camera* getInstance(){
         static Camera instance;
         return &instance;
     }
 
-    //This Method get a frame from camera thread-safely
     bool getFrame(Mat& output){
         Mat frame;
         std::lock_guard<std::mutex> gaurd(this->camera_mutex_);

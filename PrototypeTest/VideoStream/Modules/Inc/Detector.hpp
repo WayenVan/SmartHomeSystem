@@ -13,7 +13,11 @@
 
 namespace wayenvan{
 
-
+/**
+ * @brief detector class is used to detect human face from camera, it has a thread to:
+ * - read video frame and do detection
+ * - save detected frame into buffer
+ * - notify other module if detected */
 class Detector: public CppThread{
 
     typedef boost::circular_buffer<cv::Mat> FrameBuffer;
@@ -36,7 +40,7 @@ class Detector: public CppThread{
 
     public:
     //default constructor
-    Detector(const int& max_buffer = 20, const int& frame_compress_height=360, const int& frame_compress_width = 640):
+    Detector(const int& max_buffer = 10, const int& frame_compress_height=360, const int& frame_compress_width = 640):
         camera(nullptr), 
         frame_buffer_mutex_{}, 
         frame_buffer_(nullptr), 

@@ -16,6 +16,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include <thread>
+#include <module_exception.hpp>
 
 namespace wayenvan{
 
@@ -59,11 +60,10 @@ void ServerVideo::run(){
 
         int clientSocket = accept(listening, (sockaddr*)&client, &clientSize);
         if(clientSocket == -1){
-            myUtils::share_cerr("problem when accept connection!");
-            exit(0);
+            ModuleException e(myUtils::get_type(this), "socket accept failed!");
+            throw e;
         }
 
-        //close the listening socket
         //close(listening);
 
         //print information 
@@ -102,8 +102,8 @@ void ServerVideo::run(){
             //recieve data from client and check if it is connected
             int bytesRecv = recv(clientSocket, bufRecv, 4096, 0);
             if(bytesRecv == -1){
-                myUtils::share_cerr("the client disconnected not safe");
-                exit(0);
+                ModuleException e(myUtils::get_type(this), "connection close unsafely");
+                throw e;
             }
             if(bytesRecv == 0){
                 myUtils::share_print("the client disconnected");
@@ -136,7 +136,7 @@ void ServerVideo::run(){
                 }
             }
             
-            std::this_thread::sleep_for (std::chrono::milliseconds(30));
+            //std::this_thread::sleep_for (std::chrono::milliseconds(30));
         }
         //close socket
         close(clientSocket);
