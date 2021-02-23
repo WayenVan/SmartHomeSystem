@@ -1,6 +1,6 @@
 add_library(modules 
-  ${CMAKE_CURRENT_SOURCE_DIR}/Src/Detector.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/Src/ServerVideo.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/Src/server_video.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/Src/detector.cc
 )
 
 #find boost 
