@@ -15,7 +15,7 @@ cmake-build-debug
 .idea
 
 #vscode
-
+.vscode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
