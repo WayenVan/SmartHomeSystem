@@ -1,6 +1,7 @@
 add_library(modules 
   ${CMAKE_CURRENT_SOURCE_DIR}/Src/server_video.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/Src/detector.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/Src/lock_control.cc
 )
 
 #find boost 
@@ -20,8 +21,18 @@ endif()
 find_package(OpenCV REQUIRED)
 #libraries
 target_link_libraries(modules
-    ${OpenCV_LIBS}
+  ${OpenCV_LIBS}
 )
+#find pigpio
+target_link_libraries(modules
+  pigpio
+)
+
+#linke_myUtils
+target_link_libraries(modules
+  myUtils
+)
+
 
 target_include_directories(modules PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc
