@@ -66,7 +66,7 @@ class Servo {
      */
     bool reposition(int angle){
 
-        if(angle<=0 || angle> 180){
+        if(angle< 0 || angle > 180){
             myUtils::share_print("reposition angle of servo out of range in pin " + std::to_string(kGpioPort_));
             return false;
         }

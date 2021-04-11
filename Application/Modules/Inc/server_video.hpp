@@ -10,7 +10,7 @@ namespace wayenvan{
 class ServerVideo: public CppThread{
 
     private:
-    Detector* detector;
+    Detector::DetectorPointer detector;
 
     //change ip
     const char* kServerIp_;
@@ -23,11 +23,14 @@ class ServerVideo: public CppThread{
         detector(nullptr), 
         kServerIp_(server_ip), 
         kServerPort_(server_port)
+    {
+        myUtils::share_print("video server initialized");
         
-    {}
+    }
+    
     ~ServerVideo() {}
 
-    void registerDetector(Detector* detector){
+    void registerDetector(Detector::DetectorPointer detector){
         this->detector = detector;
     }
 

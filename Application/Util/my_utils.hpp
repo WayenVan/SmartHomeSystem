@@ -1,28 +1,14 @@
-#ifndef _MYUTILS_HPP_
-#define _MYUTILS_HPP_
+#ifndef _MY_UTILS_HPP_
+#define _MY_UTILS_HPP_
 
-//a thread safe print
-#include <iostream>
-#include <mutex>
-#include <string>
-#include <module_exception.hpp>
-#include <typeinfo>
+#include<string>
 
 namespace wayenvan{
 
 namespace myUtils{
 
-inline void share_print(std::string str){
-    static std::mutex kprint_mutex;
-    std::lock_guard<std::mutex> guard(kprint_mutex);
-    std::cout<<str<<std::endl;
-}
-
-inline void share_cerr(std::string str){
-    static std::mutex kshare_cerr_mutex;
-    std::lock_guard<std::mutex> guard(kshare_cerr_mutex);
-    std::cerr<<str<<std::endl;
-}
+void share_print(std::string str);
+void share_cerr(std::string str);
 
 template<typename T>
 inline const char* get_type(const T& var){
@@ -30,5 +16,7 @@ inline const char* get_type(const T& var){
 }
 
 }
+
 }
+
 #endif

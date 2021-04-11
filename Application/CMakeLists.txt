@@ -16,6 +16,12 @@ target_link_libraries(${PROJECT_NAME}
     modules
 )
 
+#myUtils library
+add_subdirectory(Util)
+target_link_libraries(${PROJECT_NAME}
+    myUtils
+)
+
 
 # include dirctories
 target_include_directories(${PROJECT_NAME} PUBLIC

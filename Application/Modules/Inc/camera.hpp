@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <module_exception.hpp>
 #include <typeinfo>
+#include <memory>
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
@@ -48,6 +49,7 @@ class Camera{
 
         int width = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_WIDTH));
         int length = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_HEIGHT));
+        
         //print camera information
         boost::format info("camera resolution: width %1%, height %2%");
         info % width;

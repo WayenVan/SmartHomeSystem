@@ -91,6 +91,7 @@ void ServerVideo::run(){
         std::vector<uchar> buffer;
         int size = 0;
         cv::Mat frame;
+
         //while receiving display message, echo message
         while(true){
 
@@ -129,7 +130,9 @@ void ServerVideo::run(){
                     break;
                 }
                 myUtils::share_print("send an image, buffer size: "+std::to_string(buffer.size()));
+                
             }else{
+                //if get frame not succesful, send 0 to the client
                 if(send(clientSocket, &size, sizeof(int), 0)== -1){
                     myUtils::share_print("problem when sending information");
                     break;
