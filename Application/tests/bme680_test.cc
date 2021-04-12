@@ -1,4 +1,4 @@
-#include<python2.7/Python.h>
+#include<python3.7/Python.h>
 #include<iostream>
 #include<bme680.hpp>
 
@@ -8,7 +8,7 @@ using namespace std;
 int main(){
     Py_Initialize();
     
-    Bme680* b = Bme680::getInstance(); 
+    BME680* b = BME680::getInstance(); 
     int i = 0;
     while(i<20){
         cout<<b->getTemperature()<<endl;

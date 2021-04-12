@@ -50,7 +50,7 @@ add_executable(bme680_test bme680_test.cc)
 
 target_link_libraries(bme680_test
     modules
-    python2.7
+    python3.7m
     myUtils
 )
 
@@ -60,3 +60,34 @@ target_include_directories(bme680_test PUBLIC
 )
 
 add_test(NAME BME680Test COMMAND bme680_test)
+
+#---------server_universal_test----#
+
+add_executable(server_universal_test server_universal_test.cc)
+
+target_link_libraries(server_universal_test
+    modules
+)
+
+target_include_directories(server_universal_test PUBLIC
+    ${PROJECT_SOURCE_DIR}/Modules/Inc
+    ${PROJECT_SOURCE_DIR}/Util
+)
+
+add_test(NAME ServerUniversalTest COMMAND server_universal_test)
+
+#------------amg8833_test---------#
+
+
+add_executable(amg8833_test amg8833_test.cc)
+
+target_link_libraries(amg8833_test
+    python3.7m
+)
+
+target_include_directories(amg8833_test PUBLIC
+    ${PROJECT_SOURCE_DIR}/Modules/Inc
+    ${PROJECT_SOURCE_DIR}/Util
+)
+
+add_test(NAME AMG8833Test COMMAND amg8833_test)

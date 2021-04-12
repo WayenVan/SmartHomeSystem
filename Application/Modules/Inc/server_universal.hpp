@@ -9,6 +9,7 @@
 namespace wayenvan{
 /**
  * a server which accept universal order from the application, except video
+ * using epoll as a NIO with
  */
 class ServerUniversal: public CppThread{
 
@@ -16,14 +17,23 @@ class ServerUniversal: public CppThread{
     ServerUniversal& operator=(ServerUniversal& s);
     ServerUniversal(ServerUniversal& s);
 
-    const char* kServerIp_;
-    const int kServerPort_;
+    const char* kServerPort_;
     const int kMaxEvents_;
 
     protected:
 
-    //the running server
+    //the running server using epoll 
     void run();
+
+    /**
+     * create the listen socket and bind it to the port
+     */
+    int createAndBind(const char* port);
+
+    /**
+     * make the socket not block
+     */
+    int makeSocketNonBlocking(int sfd);
 
     // @todo register list of other module;
     LockControl::LockControlPonter lock_control_;
@@ -31,9 +41,9 @@ class ServerUniversal: public CppThread{
     public:
     /**
      * constructor
+     * @par kServerPort: the port of localhost, the server will automatically start with "0.0.0.0" for all ip avialiable in this 
      */
-    ServerUniversal(const char* KServerIp, const int kServerPort):
-        kServerIp_(KServerIp),
+    ServerUniversal(const char* kServerPort):
         kServerPort_(kServerPort),
         kMaxEvents_(10),
         lock_control_(nullptr)
