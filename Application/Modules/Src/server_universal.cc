@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <errno.h>
+#include <iostream>
 
 
 #define MAXEVENTS 64
@@ -217,6 +218,7 @@ void ServerUniversal::run(){
                   char buf[512];
 
                   count = read (events[i].data.fd, buf, sizeof buf);
+
                   if (count == -1)
                     {
                       /* If errno == EAGAIN, that means we have read all

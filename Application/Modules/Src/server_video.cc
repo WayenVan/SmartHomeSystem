@@ -1,5 +1,6 @@
 #include <server_video.hpp>
 #include <my_utils.hpp>
+#include <iostream>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -10,6 +11,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <string>
+#include <sys/fcntl.h>
+#include <sys/epoll.h>
+
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
@@ -20,130 +24,318 @@
 
 namespace wayenvan{
 
+#define MAXEVENTS 4
+
 void ServerVideo::run(){
 
-    //create socket
-    int listening = socket(AF_INET , SOCK_STREAM, 0);
-    if (listening== -1){
-        myUtils::share_cerr("Can not create a soket!");
-        exit(0);
-    }
+    int sfd, s;
+    int efd;
+    struct epoll_event event;
+    struct epoll_event *events;
 
-    //Bind the socket to a IP/port
-    sockaddr_in hint;
-    hint.sin_family = AF_INET;
-    hint.sin_port = htons(this->kServerPort_);
-    inet_pton(AF_INET, this->kServerIp_, &hint.sin_addr);
+    sfd = createAndBind(kServerPort_);
+    if (sfd == -1)
+    abort ();
 
+    s = makeSocketNonBlocking(sfd);
+    if (s == -1)
+    abort ();
 
-    if(::bind(listening, (sockaddr*)&hint, sizeof(hint)) == -1)
+    s = listen (sfd, SOMAXCONN);
+    if (s == -1)
     {
-        myUtils::share_cerr("can not bind to IP/port");
-        exit(0);
+        perror ("listen");
+        abort ();
     }
 
-
-    //mark the socket for listening in
-    if(listen(listening, SOMAXCONN)==-1){
-        myUtils::share_cerr("can not listening");
-        exit(0);
+    efd = epoll_create1 (0);
+    if (efd == -1)
+    {
+        perror ("epoll_create");
+        abort ();
     }
 
-    //Accept a call 
-    sockaddr_in client;
-    socklen_t clientSize;
-    char host[NI_MAXHOST];
-    char svc[NI_MAXSERV];
-
-    //accept loop
-    while(true){
-
-        int clientSocket = accept(listening, (sockaddr*)&client, &clientSize);
-        if(clientSocket == -1){
-            ModuleException e(myUtils::get_type(this), "socket accept failed!");
-            throw e;
-        }
-
-        //close(listening);
-
-        //print information 
-        memset(host, 0, NI_MAXHOST);
-        memset(svc, 0, NI_MAXSERV);
-
-        int result = getnameinfo(
-            (sockaddr*)&client,
-            sizeof(client),
-            host,
-            NI_MAXHOST,
-            svc,
-            NI_MAXSERV,
-            0
-        );
-
-        if(result){
-            std::string info ="host:"+std::string(host)+"server:"+std::string(svc);
-            myUtils::share_print(host);
-        }
-
-
-        //recieve buffer
-        char bufRecv[1024];
-        std::vector<uchar> buffer;
-        int size = 0;
-        cv::Mat frame;
-
-        //while receiving display message, echo message
-        while(true){
-
-            //clear buffer and restart transmission
-            memset(bufRecv,0, 1024);
-            buffer.clear();
-            size = 0;
-
-            //recieve data from client and check if it is connected
-            int bytesRecv = recv(clientSocket, bufRecv, 4096, 0);
-            if(bytesRecv == -1){
-                ModuleException e(myUtils::get_type(this), "connection close unsafely");
-                throw e;
-            }
-            if(bytesRecv == 0){
-                myUtils::share_print("the client disconnected");
-                break;
-            }
-
-            //send frame to client
-            if(this->detector->bufferPop(frame)){
-                
-                cv::imencode(".jpg", frame, buffer);
-                //sprintf(bufSendPtr.get(), "frame length: %d frame width: %d, encode size: %lu\n", frame.cols, frame.rows, buffer.size());
-
-                //firstly send image size
-                size = buffer.size();
-                if(send(clientSocket, &size, sizeof(int), 0)== -1){
-                    myUtils::share_print("problem when sending information");
-                    break;
-                }
-
-                //secondly send the image
-                if(send(clientSocket, reinterpret_cast<char*>(buffer.data()), buffer.size(), 0)== -1){
-                    myUtils::share_print("problem when sending information");
-                    break;
-                }
-                myUtils::share_print("send an image, buffer size: "+std::to_string(buffer.size()));
-                
-            }else{
-                //if get frame not succesful, send 0 to the client
-                if(send(clientSocket, &size, sizeof(int), 0)== -1){
-                    myUtils::share_print("problem when sending information");
-                    break;
-                }
-            }
-            
-            //std::this_thread::sleep_for (std::chrono::milliseconds(30));
-        }
-        //close socket
-        close(clientSocket);
+    event.data.fd = sfd;
+    event.events = EPOLLIN | EPOLLET;
+    s = epoll_ctl (efd, EPOLL_CTL_ADD, sfd, &event);
+    if (s == -1)
+    {
+        perror ("epoll_ctl");
+        abort ();
     }
+
+    /* Buffer where events are returned */
+    events = (epoll_event*)calloc (MAXEVENTS, sizeof(epoll_event));
+
+    /* The event loop */
+    while (1)
+    {
+        int n, i;
+
+        n = epoll_wait (efd, events, MAXEVENTS, -1);
+        for (i = 0; i < n; i++)
+    {
+        if ((events[i].events & EPOLLERR) ||
+                (events[i].events & EPOLLHUP) ||
+                (!(events[i].events & EPOLLIN)))
+        {
+                /* An error has occured on this fd, or the socket is not
+                    ready for reading (why were we notified then?) */
+            fprintf (stderr, "epoll error\n");
+            close (events[i].data.fd);
+            continue;
+        }
+
+        else if (sfd == events[i].data.fd)
+        {
+                /* We have a notification on the listening socket, which
+                    means one or more incoming connections. */
+                while (1)
+                {
+                    struct sockaddr in_addr;
+                    socklen_t in_len;
+                    int infd;
+                    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+
+                    in_len = sizeof in_addr;
+                    infd = accept (sfd, &in_addr, &in_len);
+                    if (infd == -1)
+                    {
+                        if ((errno == EAGAIN) ||
+                            (errno == EWOULDBLOCK))
+                        {
+                            /* We have processed all incoming
+                                connections. */
+                            break;
+                        }
+                        else
+                        {
+                            perror ("accept");
+                            break;
+                        }
+                    }
+
+                    s = getnameinfo (&in_addr, in_len,
+                                    hbuf, sizeof hbuf,
+                                    sbuf, sizeof sbuf,
+                                    NI_NUMERICHOST | NI_NUMERICSERV);
+                    if (s == 0)
+                    {
+                        printf("Accepted connection on descriptor %d "
+                                "(host=%s, port=%s)\n", infd, hbuf, sbuf);
+                    }
+
+                    /* Make the incoming socket non-blocking and add it to the
+                        list of fds to monitor. */
+                    s = makeSocketNonBlocking (infd);
+                    if (s == -1)
+                    abort ();
+
+                    event.data.fd = infd;
+                    event.events = EPOLLIN | EPOLLET;
+                    s = epoll_ctl (efd, EPOLL_CTL_ADD, infd, &event);
+                    if (s == -1)
+                    {
+                        perror ("epoll_ctl");
+                        abort ();
+                    }
+                }
+                continue;
+            }
+            else
+            {
+                /* We have data on the fd waiting to be read. Read and
+                    display it. We must read whatever data is available
+                    completely, as we are running in edge-triggered mode
+                    and won't get a notification again for the same
+                    data. */
+                int done = 0;
+
+                while (1)
+                {
+                    ssize_t count;
+
+                    //recv buff
+                    char buf[512];
+
+                    count = read (events[i].data.fd, buf, sizeof buf);
+
+                    if (count == -1)
+                    {
+                        /* If errno == EAGAIN, that means we have read all
+                            data. So go back to the main loop. */
+                        if (errno != EAGAIN)
+                        {
+                            perror ("read");
+                            done = 1;
+                        }
+                        break;
+                    }
+                    else if (count == 0)
+                    {
+                        /* End of file. The remote has closed the
+                            connection. */
+                        done = 1;
+                        break;
+                    }
+
+                    cv::Mat frame;
+                    /* todo sending frame */
+                    for(int j = 0; j < count; j++){
+                        if(detector->bufferPop(frame)){
+                            done = sendFrame(events[i].data.fd, frame);
+                        }else{
+
+                            //if taking hte frame unsuccessful
+                            while(1){
+                                int s = 0;
+                                int result = send(events[i].data.fd, &s, sizeof(int), 0);
+
+                                if(result <= 0){
+                                    if(errno != EAGAIN || EWOULDBLOCK){
+                                        perror ("send 0 frame size");
+                                        done = 1;
+                                    }
+                                    continue;
+                                }
+                                if(result > 0){
+                                    break;
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+
+                if (done)
+                {
+                    printf ("Closed connection on descriptor %d\n",
+                            events[i].data.fd);
+
+                    /* Closing the descriptor will make epoll remove it
+                        from the set of descriptors which are monitored. */
+                    close (events[i].data.fd);
+                }
+
+            }
+        }
+    }
+
+    free (events);
+
+    close (sfd);
+    }
+
+int ServerVideo::sendFrame(const int socket, cv::Mat& frame){
+
+    std::vector<uchar> buffer;
+    cv::imencode(".jpg", frame, buffer);
+    int buffer_size = buffer.size();
+    
+    //send the frame size
+    while(1){
+
+        int result = send(socket, &buffer_size, sizeof(int), 0);
+        if(result <= 0){
+
+            if(errno != EAGAIN || EWOULDBLOCK){
+                perror ("send frame size");
+                return 1;
+            }
+            continue;
+        }
+
+        if(result > 0){
+            break;
+        }
+    }
+
+    //send the frame
+    while(1){
+        int result = send(socket, reinterpret_cast<char*>(buffer.data()), buffer.size(), 0);
+        std::cout<<"result"<<result<<std::endl;
+        
+        if(result <= 0){
+            if(errno != EAGAIN || EWOULDBLOCK){
+                perror ("send frame size");
+                return 1;
+            }
+            continue;
+        }
+
+        if(result > 0){
+            break;
+        }
+    }
+
+    return false;
+}
+
+int ServerVideo::createAndBind(const char* port){
+
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int s, sfd;
+
+    memset (&hints, 0, sizeof (struct addrinfo));
+    hints.ai_family = AF_UNSPEC;     /* Return IPv4 and IPv6 choices */
+    hints.ai_socktype = SOCK_STREAM; /* We want a TCP socket */
+    hints.ai_flags = AI_PASSIVE;     /* All interfaces */
+
+    s = getaddrinfo (NULL, port, &hints, &result);
+    if (s != 0)
+    {
+    fprintf (stderr, "getaddrinfo: %s\n", gai_strerror (s));
+    return -1;
+    }
+
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+    sfd = socket (rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+    if (sfd == -1)
+    continue;
+
+    s = bind (sfd, rp->ai_addr, rp->ai_addrlen);
+    if (s == 0)
+    {
+        /* We managed to bind successfully! */
+        break;
+    }
+
+    close (sfd);
+    }
+
+    if (rp == NULL)
+    {
+        fprintf (stderr, "Could not bind\n");
+        return -1;
+    }
+
+    freeaddrinfo (result);
+
+    return sfd;
+}
+
+int ServerVideo::makeSocketNonBlocking(const int& sfd){
+
+    int flags, s;
+
+    flags = fcntl (sfd, F_GETFL, 0);
+    if (flags == -1)
+    {
+        perror ("fcntl");
+        return -1;
+    }
+
+    flags |= O_NONBLOCK;
+    s = fcntl (sfd, F_SETFL, flags);
+    if (s == -1)
+    {
+        perror ("fcntl");
+        return -1;
+    }
+
+    return 0;
 }
 
 }

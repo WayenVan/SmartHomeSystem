@@ -9,9 +9,13 @@
 #include <module_exception.hpp>
 #include <typeinfo>
 #include <memory>
+#include <iostream>
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
+
+#define CAMERA_WIDTH 640
+#define CAMERA_HEIGHT 360
 
 
 namespace wayenvan{
@@ -46,6 +50,9 @@ class Camera{
             throw e;       
         }
         myUtils::share_print("camera open success");
+        std::cout<<cv::getBuildInformation();
+        video_capture_.set(cv::CAP_PROP_AUTO_EXPOSURE,0.25);
+        video_capture_.set(cv::CAP_PROP_EXPOSURE, 0.9);
 
         int width = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_WIDTH));
         int length = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_HEIGHT));

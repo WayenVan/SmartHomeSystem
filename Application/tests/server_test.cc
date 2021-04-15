@@ -14,8 +14,8 @@ int main (){
     try{
         
         myUtils::share_print("hello");
-        Detector::DetectorPointer detector =Detector::DetectorPointer(new Detector());
-        ServerVideo_ptr server = ServerVideo_ptr(new ServerVideo("0.0.0.0", 12345));
+        Detector::DetectorPointer detector =Detector::DetectorPointer(new Detector("/home/pi/Documents/opencv/opencv/data/haarcascades/haarcascade_frontalface_default.xml"));
+        ServerVideo_ptr server = ServerVideo_ptr(new ServerVideo("12345"));
 
         server->registerDetector(detector);
 

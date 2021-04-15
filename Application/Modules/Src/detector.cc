@@ -3,6 +3,9 @@
 #include <thread>
 #include <my_utils.hpp>
 #include <module_exception.hpp>
+#include <algorithm.hpp>
+#include <vector>
+#include <mutex>
 
 namespace wayenvan{
 
@@ -14,14 +17,30 @@ void Detector::run(){
         ModuleException e(myUtils::get_type(*this), "the camera is not opened correctly");
         throw e;
     }
+    double scale = 3.0;
     cv::Mat frame;
+    std::vector<cv::Rect> faces;
+    std::unique_lock<std::mutex> locker(compress_size_mutex_);
+    locker.unlock();
+
     while(1){
+        //clean faces
+        faces.clear();
+
         if(!camera->getFrame(frame)){
             // if the frame return false
             continue;
         }
+
         //compress image
-        cv::resize(frame, frame, cv::Size(kFrameCompressWidth_, kFrameCompressHeight_));
+        locker.lock();
+        cv::resize(frame, frame, cv::Size(frame_compress_Width_, frame_compress_height_));
+        locker.unlock();
+        
+        //start 
+        algorithm::faceDetect(frame, face_cascade_, scale, faces);
+        if(faces.size() > 0) algorithm::drawFaces(frame, faces, scale);
+
         bufferPush(frame);
         std::this_thread::sleep_for (std::chrono::milliseconds(30));         
     }

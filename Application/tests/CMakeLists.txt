@@ -83,6 +83,7 @@ add_executable(amg8833_test amg8833_test.cc)
 
 target_link_libraries(amg8833_test
     python3.7m
+    pigpio
 )
 
 target_include_directories(amg8833_test PUBLIC

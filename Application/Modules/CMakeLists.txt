@@ -23,14 +23,7 @@ find_package(OpenCV REQUIRED)
 #libraries
 target_link_libraries(modules
   ${OpenCV_LIBS}
-)
-#find pigpio
-target_link_libraries(modules
   pigpio
-)
-
-#linke_myUtils
-target_link_libraries(modules
   myUtils
 )
 

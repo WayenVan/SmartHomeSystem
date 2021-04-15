@@ -8,11 +8,18 @@
 #include <mutex>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 #include <camera.hpp>
+#include <module_exception.hpp>
 #include <memory>
+
 
 namespace wayenvan{
 
+
+namespace {
+    const int kScale = 3.0;
+}
 /**
  * @brief detector class is used to detect human face from camera, it has a thread to:
  * - read video frame and do detection
@@ -38,27 +45,46 @@ class Detector: public CppThread{
 
     const int kFrameBufferMax_;
 
-    //frame compress 
-    const int kFrameCompressHeight_;
-    const int kFrameCompressWidth_;
+    //frame compress size 
+    std::mutex compress_size_mutex_; 
+    int frame_compress_height_;
+    int frame_compress_Width_;
+
+    //cascade 
+    cv::CascadeClassifier face_cascade_;
 
     //impelement thread run function
     void run();
 
     public:
     //default constructor
-    Detector(const int& max_buffer = 10, const int& frame_compress_height=360, const int& frame_compress_width = 640):
+    Detector(const std::string cascade_dir,
+            const int& max_buffer = 10, 
+            const int& frame_compress_height=360, 
+            const int& frame_compress_width = 640):
         camera(Camera::getInstance()), 
         frame_buffer_mutex_{}, 
         frame_buffer_(nullptr), 
         kFrameBufferMax_(max_buffer),
-        kFrameCompressWidth_(frame_compress_width),
-        kFrameCompressHeight_(frame_compress_height)
+        frame_compress_Width_(frame_compress_width),
+        frame_compress_height_(frame_compress_height),
+        face_cascade_()
     {
+        if(!face_cascade_.load(cascade_dir)){
+            ModuleException e(myUtils::get_type(this), "cascade file is not poaded properly");
+            throw e;
+        }
+
         frame_buffer_ = FrameBufferPointer(new FrameBuffer(kFrameBufferMax_));
         myUtils::share_print("detector initialized");
     }
     ~Detector(){
+    }
+
+    void setCompressSize(const int height, const int width){
+        std::lock_guard<std::mutex> guard(compress_size_mutex_);
+        frame_compress_height_ = height;
+        frame_compress_Width_ = width;
     }
 
     //save frame into frame_buffer_
