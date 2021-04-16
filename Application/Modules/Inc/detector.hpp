@@ -12,6 +12,7 @@
 #include <camera.hpp>
 #include <module_exception.hpp>
 #include <memory>
+#include <detect_manager.hpp>
 
 
 namespace wayenvan{
@@ -38,6 +39,7 @@ class Detector: public CppThread{
 
     private:
     Camera *camera; 
+    DetectManager::DetectManagerPointer detect_manager_;
 
     //mutex to protect buffer
     std::mutex frame_buffer_mutex_;
@@ -62,7 +64,8 @@ class Detector: public CppThread{
             const int& max_buffer = 10, 
             const int& frame_compress_height=360, 
             const int& frame_compress_width = 640):
-        camera(Camera::getInstance()), 
+        camera(Camera::getInstance()),
+        detect_manager_(), 
         frame_buffer_mutex_{}, 
         frame_buffer_(nullptr), 
         kFrameBufferMax_(max_buffer),
@@ -79,6 +82,14 @@ class Detector: public CppThread{
         myUtils::share_print("detector initialized");
     }
     ~Detector(){
+    }
+
+    void regsisterDetectManager(DetectManager::DetectManagerPointer ins){
+        detect_manager_ = ins;
+        if(detect_manager_.get() == nullptr){
+            ModuleException e(myUtils::get_type(this), "detect manager is register failed");
+            throw e;
+        }
     }
 
     void setCompressSize(const int height, const int width){

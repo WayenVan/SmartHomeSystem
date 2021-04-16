@@ -37,12 +37,18 @@ void Detector::run(){
         cv::resize(frame, frame, cv::Size(frame_compress_Width_, frame_compress_height_));
         locker.unlock();
         
-        //start 
+        //face detection method
         algorithm::faceDetect(frame, face_cascade_, scale, faces);
-        if(faces.size() > 0) algorithm::drawFaces(frame, faces, scale);
 
+        //face detected
+        if(faces.size() > 0) {
+            myUtils::share_print("face detected");
+            algorithm::drawFaces(frame, faces, scale);
+            //detect_manager_->notify();
+        }
         bufferPush(frame);
-        std::this_thread::sleep_for (std::chrono::milliseconds(30));         
+        std::this_thread::sleep_for (std::chrono::milliseconds(30));  
+
     }
 }
 

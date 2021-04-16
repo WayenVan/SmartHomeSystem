@@ -12,6 +12,8 @@ namespace wayenvan{
  * using epoll as a NIO with
  */
 class ServerUniversal: public CppThread{
+    public:
+    typedef std::shared_ptr<ServerUniversal> ServerUniversalPointer;
 
     private:
     ServerUniversal& operator=(ServerUniversal& s);

@@ -27,6 +27,8 @@ class DetectManager: public CppThread{
         HANDLING,
     }State;
 
+    typedef std::shared_ptr<DetectManager> DetectManagerPointer;
+
     private:
     LockControl::LockControlPonter locker_;
     AMG8833* sensor_;
@@ -44,10 +46,22 @@ class DetectManager: public CppThread{
             lock.unlock();
 
             //todo opencv lock
+            myUtils::share_print("start measure temperature");
+            for(int i = 0; i < 5; i++){
+                if(sensor_->getTemperature(4, 4) >= 30.0){
+                    myUtils::share_print("temperature pass!");
+                    locker_->notify();
+                    break;
+                }
 
+                //sleep 700 ms
+                std::this_thread::sleep_for(std::chrono::milliseconds(700));
+            }
 
+            //judge if the 
 
             lock.lock();
+            state_ = READY;
         }
     }
 
@@ -61,13 +75,23 @@ class DetectManager: public CppThread{
         sensor_(AMG8833::getInstance()),
         state_(READY)
     {   
-        
+        if(sensor_ == nullptr){
+            ModuleException e(myUtils::get_type(this), "amg8833 sensor is null");
+            throw e;
+        }
+
+        myUtils::share_print("Detect manager initialized");
+
     }
     ~DetectManager(){}
 
     //registerLockControl
     void registerLockControl(LockControl::LockControlPonter locker){
         locker_ = locker;
+        if(locker_.get() == nullptr){
+            ModuleException e(myUtils::get_type(this), "locker control is register failed");
+            throw e;
+        }
     }
 
     bool notify(){
@@ -77,7 +101,7 @@ class DetectManager: public CppThread{
             return false;
         }
         state_ = START;
-        cv_.notify_one();
+        cv_.notify_all();
 
         return true;
     }

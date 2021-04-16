@@ -150,14 +150,14 @@ void ServerVideo::run(){
                     and won't get a notification again for the same
                     data. */
                 int done = 0;
-
+                int recv_size = 0;
+                char recv_data[512];
                 while (1)
                 {
                     ssize_t count;
 
                     //recv buff
                     char buf[512];
-
                     count = read (events[i].data.fd, buf, sizeof buf);
 
                     if (count == -1)
@@ -178,34 +178,53 @@ void ServerVideo::run(){
                         done = 1;
                         break;
                     }
+                    else if (count >=0){
+                        std::memcpy(recv_data + recv_size, buf, count);
+                        recv_size += count;
+                    }
+                    
+                }
 
-                    cv::Mat frame;
-                    /* todo sending frame */
-                    for(int j = 0; j < count; j++){
-                        if(detector->bufferPop(frame)){
-                            done = sendFrame(events[i].data.fd, frame);
-                        }else{
+                int instruction = 0x00;
 
-                            //if taking hte frame unsuccessful
-                            while(1){
-                                int s = 0;
-                                int result = send(events[i].data.fd, &s, sizeof(int), 0);
+                if(recv_size > 4){
+                    myUtils::share_print("recieve int but exceed");
+                }
 
-                                if(result <= 0){
-                                    if(errno != EAGAIN || EWOULDBLOCK){
-                                        perror ("send 0 frame size");
-                                        done = 1;
-                                    }
-                                    continue;
-                                }
-                                if(result > 0){
-                                    break;
-                                }
+                std::memcpy(&instruction, recv_data, recv_size);
+                myUtils::share_print("video server get " + std::to_string(recv_size) + " byte");
+                myUtils::share_print("video server get " + std::to_string(instruction) + " instruction");
+
+              
+                /* todo sending frame */
+                cv::Mat frame;
+        
+                if(detector->bufferPop(frame)){
+                    done = sendFrame(events[i].data.fd, frame);
+                }else{
+                    //if taking hte frame unsuccessful
+                    while(1){
+                        int s = 0;
+                        int result = send(events[i].data.fd, &s, sizeof(int), 0);
+
+                        if(result <= 0){
+
+                            if(errno != EAGAIN || EWOULDBLOCK){
+                                perror ("send 0 frame size");
+                                done = 1;
                             }
+                            continue;
                         }
-                        
+                        if(result > 0){
+                            break;
+                        }
                     }
                 }
+                    
+                if(done == 1) break;
+                
+            
+            
 
                 if (done)
                 {
@@ -237,7 +256,6 @@ int ServerVideo::sendFrame(const int socket, cv::Mat& frame){
 
         int result = send(socket, &buffer_size, sizeof(int), 0);
         if(result <= 0){
-
             if(errno != EAGAIN || EWOULDBLOCK){
                 perror ("send frame size");
                 return 1;
@@ -246,6 +264,7 @@ int ServerVideo::sendFrame(const int socket, cv::Mat& frame){
         }
 
         if(result > 0){
+            myUtils::share_print("send size " + std::to_string(result));
             break;
         }
     }
@@ -253,11 +272,10 @@ int ServerVideo::sendFrame(const int socket, cv::Mat& frame){
     //send the frame
     while(1){
         int result = send(socket, reinterpret_cast<char*>(buffer.data()), buffer.size(), 0);
-        std::cout<<"result"<<result<<std::endl;
         
         if(result <= 0){
             if(errno != EAGAIN || EWOULDBLOCK){
-                perror ("send frame size");
+                perror ("send frame");
                 return 1;
             }
             continue;

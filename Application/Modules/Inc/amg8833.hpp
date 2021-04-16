@@ -58,8 +58,9 @@ class AMG8833{
 
     /**
      * get the temperature of one pixel
-     * @brief the amg88xx generate a matrix of temperature, thus to find on pixel
+     * @brief the amg88xx generate a 8x8 matrix of temperature, thus to find on pixel
      * for our intended human temperature
+     * @return the temperature of the position
      */
 
     double getTemperature(int row_positioin, int col_position){

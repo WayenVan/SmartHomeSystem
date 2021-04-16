@@ -31,8 +31,10 @@ void LockControl::run(){
         state_mutex.unlock();
 
         //start unlock
+        myUtils::share_print("open the door!");
         servo_.reposition(90);
         std::this_thread::sleep_for(std::chrono::seconds(5));
+        myUtils::share_print("close the door!");
         servo_.reset();
         state_mutex.lock();
     }

@@ -92,3 +92,20 @@ target_include_directories(amg8833_test PUBLIC
 )
 
 add_test(NAME AMG8833Test COMMAND amg8833_test)
+
+#--------------detect_manager_test-------#
+add_executable(detect_manager_test detect_manager_test.cc)
+
+target_link_libraries(detect_manager_test
+    python3.7m
+    pigpio
+    pthread
+    modules
+)
+
+target_include_directories(detect_manager_test PUBLIC
+    ${PROJECT_SOURCE_DIR}/Modules/Inc
+    ${PROJECT_SOURCE_DIR}/Util
+)
+
+add_test(NAME DetectManagerTest COMMAND detect_manager_test)

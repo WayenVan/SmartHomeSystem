@@ -9,6 +9,9 @@ namespace wayenvan{
 
 class ServerVideo: public CppThread{
 
+    public:
+    typedef std::shared_ptr<ServerVideo> ServerVideoPointer;
+
     private:
     Detector::DetectorPointer detector;
 
