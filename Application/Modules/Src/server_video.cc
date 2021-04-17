@@ -185,6 +185,17 @@ void ServerVideo::run(){
                     
                 }
 
+                if (done)
+                {
+                    printf ("Closed connection on descriptor %d\n",
+                            events[i].data.fd);
+
+                    /* Closing the descriptor will make epoll remove it
+                        from the set of descriptors which are monitored. */
+                    close (events[i].data.fd);
+                    continue;
+                }
+
                 int instruction = 0x00;
 
                 if(recv_size > 4){
@@ -221,10 +232,6 @@ void ServerVideo::run(){
                     }
                 }
                     
-                if(done == 1) break;
-                
-            
-            
 
                 if (done)
                 {
@@ -250,6 +257,7 @@ int ServerVideo::sendFrame(const int socket, cv::Mat& frame){
     std::vector<uchar> buffer;
     cv::imencode(".jpg", frame, buffer);
     int buffer_size = buffer.size();
+    myUtils::share_print("send size " + std::to_string(buffer_size));
     
     //send the frame size
     while(1){
@@ -264,7 +272,7 @@ int ServerVideo::sendFrame(const int socket, cv::Mat& frame){
         }
 
         if(result > 0){
-            myUtils::share_print("send size " + std::to_string(result));
+            
             break;
         }
     }
@@ -282,11 +290,12 @@ int ServerVideo::sendFrame(const int socket, cv::Mat& frame){
         }
 
         if(result > 0){
+            myUtils::share_print("actual send size " + std::to_string(result));
             break;
         }
     }
 
-    return false;
+    return 0;
 }
 
 int ServerVideo::createAndBind(const char* port){

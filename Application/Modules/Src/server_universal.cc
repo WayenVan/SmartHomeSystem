@@ -202,69 +202,141 @@ void ServerUniversal::run(){
               continue;
             }
           else
-            {
-              /* We have data on the fd waiting to be read. Read and
-                 display it. We must read whatever data is available
-                 completely, as we are running in edge-triggered mode
-                 and won't get a notification again for the same
-                 data. */
-              int done = 0;
+          {
+            /* We have data on the fd waiting to be read. Read and
+                display it. We must read whatever data is available
+                completely, as we are running in edge-triggered mode
+                and won't get a notification again for the same
+                data. */
+            int done = 0;
+            int recv_size = 0;
+            char recv_data[512];
 
-              while (1)
-                {
+            //recieve instruction
+            while (1)
+              {
                   ssize_t count;
 
                   //recv buff
                   char buf[512];
-
                   count = read (events[i].data.fd, buf, sizeof buf);
 
                   if (count == -1)
-                    {
+                  {
                       /* If errno == EAGAIN, that means we have read all
-                         data. So go back to the main loop. */
+                          data. So go back to the main loop. */
                       if (errno != EAGAIN)
-                        {
+                      {
                           perror ("read");
                           done = 1;
-                        }
+                      }
                       break;
-                    }
+                  }
                   else if (count == 0)
-                    {
+                  {
                       /* End of file. The remote has closed the
-                         connection. */
+                          connection. */
                       done = 1;
                       break;
-                    }
+                  }
+                  else if (count >=0){
+                      memcpy(recv_data + recv_size, buf, count);
+                      recv_size += count;
+                  }
+                  
+              }
+            
+            if (done)
+              {
+                printf ("Closed connection on descriptor %d\n",
+                        events[i].data.fd);
 
-                  /* todo */
-                  s = write (1, buf, count);
-                  if (s == -1)
-                    {
-                      perror ("write");
-                      abort ();
-                    }
-                }
+                /* Closing the descriptor will make epoll remove it
+                    from the set of descriptors which are monitored. */
+                close (events[i].data.fd);
+                break;
+              }
 
-              if (done)
-                {
-                  printf ("Closed connection on descriptor %d\n",
-                          events[i].data.fd);
+              //print instrution
+            int instruction = 0x00;
 
-                  /* Closing the descriptor will make epoll remove it
-                     from the set of descriptors which are monitored. */
-                  close (events[i].data.fd);
-                }
+            if(recv_size > 4){
+                myUtils::share_print("recieve int but exceed");
+            }
+
+            memcpy(&instruction, recv_data, recv_size);
+            myUtils::share_print("universal server get " + std::to_string(recv_size) + " byte");
+            myUtils::share_print("universal server get " + std::to_string(instruction) + " instruction");
+
+            //handle instruction
+            done = handleInstruction(events[i].data.fd, instruction);
+
+            if (done)
+              {
+                printf ("Closed connection on descriptor %d\n",
+                        events[i].data.fd);
+
+                /* Closing the descriptor will make epoll remove it
+                    from the set of descriptors which are monitored. */
+                close (events[i].data.fd);
+              }
 
             }
+
+
+
+            
         }
     }
 
-  free (events);
+  ::free (events);
 
   close (sfd);
 }
+
+
+int ServerUniversal::handleInstruction(const int& socket, const int& instruction){
+  
+  if(instruction == 0x11){
+    double temp = gas_sensor_->getTemperature();
+    return sendData(socket, temp);
+  }else if(instruction == 0x12){
+    double humi = gas_sensor_->getHumidity();
+    return sendData(socket, humi);
+  }else if(instruction == 0x13){
+    double press = gas_sensor_->getPressure();
+    return sendData(socket, press);
+  }
+  
+  return 0;
+}
+
+int ServerUniversal::sendData(const int& socket, const double& data){
+
+  int data_temp = data * 1000;
+
+  while(1){
+
+    int count = 0;
+    count = send(socket, &data_temp, sizeof(data_temp), 0);
+
+    if(count <= 0){
+      if(errno != EAGAIN || EWOULDBLOCK){
+          perror ("send frame");
+          return 1;
+      }
+      continue;
+    }
+
+    if(count > 0){
+        myUtils::share_print("actual send size " + std::to_string(count));
+        break;
+    }
+
+  }
+  return 0;
+}
+
 
 
 }
