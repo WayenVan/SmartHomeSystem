@@ -8,7 +8,6 @@
   <a href="https://img.shields.io/github/languages/code-size/WayenVan/SmartHomeSystem"><img src="https://img.shields.io/github/languages/code-size/WayenVan/SmartHomeSystem" alt="Code Size"></a>
   <a href="https://www.gnu.org/licenses/gpl-3.0.en.html"><img src="https://img.shields.io/github/license/healthyhomeuk/healthyhome" alt="License"></a>
   <br>
-  <a href="https://www.facebook.com/ukhealthyhome"><img width="32" hspace="5" src="./images/facebook.svg"></img></a>
   <a href="https://www.instagram.com/smart_home_system123/"><img width="32" hspace="5" src="./images/instagram.svg"></img></a>
   <a href="https://twitter.com/home"><img width="32" hspace="5" src="./images/twitter.svg"></img></a>
 <!--Icons made by https://www.freepik.com Freepik from "https://www.flaticon.com/-->
