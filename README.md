@@ -1,41 +1,158 @@
-# SIMPLE SMART HOME SYSTEM
+<p align="center"></p>
 
-## INTRODUCTION
+<h1 align="center">
+<img width="64" src="./images/imag.png">
+  SmartHomeSystem
+  <br>
+  <a href="https://github.com/WayenVan/SmartHomeSystem/issues"><img src="https://img.shields.io/github/issues/WayenVan/SmartHomeSystem" alt="GitHub Issues"></a>
+  <a href="https://img.shields.io/github/languages/code-size/WayenVan/SmartHomeSystem"><img src="https://img.shields.io/github/languages/code-size/WayenVan/SmartHomeSystem" alt="Code Size"></a>
+  <a href="https://www.gnu.org/licenses/gpl-3.0.en.html"><img src="https://img.shields.io/github/license/healthyhomeuk/healthyhome" alt="License"></a>
+  <br>
+  <a href="https://www.instagram.com/smart_home_system123/"><img width="32" hspace="5" src="./images/instagram.svg"></img></a>
+  <a href="https://twitter.com/home"><img width="32" hspace="5" src="./images/twitter.svg"></img></a>
+<!--Icons made by https://www.freepik.com Freepik from "https://www.flaticon.com/-->
+</h1> 
 
-*SMART HOME SYSTEM* is mainly designed for improving life qualities of  mankind when staying home, particularly in functions of **monitoring** and **controlling**.
+ ## Overview
 
-## SETUP
+The SmartHomeSystem is an open source project for multi-functional home monitoring system. It works mainly works as an server with other environment sensors . Users can do either remote monitoring, wirless control and automatic door control in maximums 24 clients(android and java desktop as examples inside the project) simultaneously.
 
-* Raspberry PI
-* Various sensors (e.g., temperature sensor, humidity sensor, gesture sensor)
-* Mobile phone using Android system
-* motor
-* WebCame
+## Project structure
 
-## Device Specific
+`Android/` is the android application client
 
-- [Servo Motor SG90](https://components101.com/servo-motor-basics-pinout-datasheet)
-- [CSI camera modul](https://www.raspberrypi.org/documentation/linux/software/libcamera/csi-2-usage.md)
-- [Infrared termperature sensor](https://uk.rs-online.com/web/p/infrared-temperature-sensors/8226421/?cm_mmc=UK-PLA-DS3A-_-google-_-CSS_UK_EN_Automation_%26_Control_Gear_Whoop-_-Infrared+Temperature+Sensors_Whoop-_-8226421&matchtype=&aud-772940708119:pla-343565880236&gclid=Cj0KCQiAx9mABhD0ARIsAEfpavSBlWvqE5DV7wFdamN3IiRncqKzo75-zerfkuAlQXv0zkEklwCS5RMaApJXEALw_wcB&gclsrc=aw.ds)
-- [HC-SR501 PIR sensor](https://components101.com/hc-sr501-pir-sensor)
+`DesktopClinet` is a simple java destop client example based on swing
 
-## MAIN FUNCTIONS
+`PrototypeTest` is some prototype when we try some new ideas
 
-It is a big work to complete a completely *SMART HOME SYSTEM*, therefore, we choose some cool and interesting thoughts to roughly display the possibilities of the concept, **SMART HOME**.
+`Application` is the main logic server runing on raspberry pi(T means self contained thread):
 
-### Facial recoginition with temperature check
+<img src="/Users/wayenvan/Desktop/temp/images/structure.svg" alt="./images/structure"  />
 
-Using opencv to recognize host face meanwhile check temperature (because of COVID-19)  for unlocking the door.
+## Features
 
-### Smart Door Lock Controller 
+### Basic
 
-Using Android APP to input the command of "OPEN DOOR", then through HTTP protocol to send the message to the Raspberry PI, and then PI processes the message and output the signal of  action "OPEN". Finally, the signal is sent to motor, and motor does the action of "OPEN", using string tied to the door lock. Also, this door lock controller can be activated by facial recognition
+- Indoor gas status monitoring
+- Remote video monitoring with face detection
+- Remote door control
+- Automatic door control by face detection and temperature measuremen
 
-### Real-time Reminder of Indoor Temperature and Humidity
+### Advanced
 
-Temperature sensor and humidity sensor send the signal to the Raspberry PI, and PI do filtering. After filtering, PI display the data real-time on the console, meanwhile, send the data to the Android APP, through HTTP protocol.
+thanks to the independent structure of the server users can get information of server by their own defined clients. One can get massages by TCP socket:
 
-### Infrared Anti-theft Reminder
+- Send 4 byte `int 0xff`  to the video server to get video frame in `int frame_size`  followed with `byte[frame_size] frame_data_incoded_with_jpeg`
+- Send 4 byte `int 0x11` to the universal server to get home temperature in `int actual_temperature_in cetigrade*1000`
+- Send 4 byte `int 0x12` to the universal server to get home humidity in `int actual_humidity_in_percent*1000`
+- Send 4 byte `int 0x13` to the universal server to get home gas pressure in `int actual_gas_pressure_in_P*1000`
+- Send 4 byte `int 0x15` to the universal server to open the door
+- Send 4 byte `int 0x16` to the universal server to get door status in `int status`, if `status > 0` means door is opened, `status = 0` means door is closed.
 
-Using infrared sensor to send the signal to the Raspberry PI, and PI do filtering. After filtering, PI judge whether there is a person existed in home or not, of course, real-time. And this function can link with the first function door controller, to judge whether the person is a theft or not. If there is a theft, PI will send the alert data to the Android APP.
+## Installation
+
+### hardware
+
+- [SG90](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf) : Servo
+- [BME680](https://www.bosch-sensortec.com/products/environmental-sensors/gas-sensors/bme680/): gas sensor
+- [AMG8833](https://learn.adafruit.com/adafruit-amg8833-8x8-thermal-camera-sensor): thermal sensor
+- [Raspberry Pi 3 Model B](https://www.raspberrypi.org/products/raspberry-pi-3-model-b/)
+
+The gpio point of raspberry is list below, remember we are using **BCM** port number:
+
+```shell
+ +-----+-----+---------+------+---+---Pi 4B--+---+------+---------+-----+-----+
+ | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
+ +-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+
+ |     |     |    3.3v |      |   |  1 || 2  |   |      | 5v      |     |     |
+ |   2 |   8 |   SDA.1 | ALT0 | 1 |  3 || 4  |   |      | 5v      |     |     |
+ |   3 |   9 |   SCL.1 | ALT0 | 1 |  5 || 6  |   |      | 0v      |     |     |
+ |   4 |   7 | GPIO. 7 |   IN | 1 |  7 || 8  | 1 | IN   | TxD     | 15  | 14  |
+ |     |     |      0v |      |   |  9 || 10 | 1 | IN   | RxD     | 16  | 15  |
+ |  17 |   0 | GPIO. 0 |  OUT | 0 | 11 || 12 | 0 | IN   | GPIO. 1 | 1   | 18  |
+ |  27 |   2 | GPIO. 2 |  OUT | 0 | 13 || 14 |   |      | 0v      |     |     |
+ |  22 |   3 | GPIO. 3 |   IN | 0 | 15 || 16 | 0 | IN   | GPIO. 4 | 4   | 23  |
+ |     |     |    3.3v |      |   | 17 || 18 | 0 | IN   | GPIO. 5 | 5   | 24  |
+ |  10 |  12 |    MOSI |   IN | 0 | 19 || 20 |   |      | 0v      |     |     |
+ |   9 |  13 |    MISO |   IN | 0 | 21 || 22 | 0 | IN   | GPIO. 6 | 6   | 25  |
+ |  11 |  14 |    SCLK |   IN | 0 | 23 || 24 | 1 | IN   | CE0     | 10  | 8   |
+ |     |     |      0v |      |   | 25 || 26 | 1 | IN   | CE1     | 11  | 7   |
+ |   0 |  30 |   SDA.0 |   IN | 1 | 27 || 28 | 1 | IN   | SCL.0   | 31  | 1   |
+ |   5 |  21 | GPIO.21 |   IN | 1 | 29 || 30 |   |      | 0v      |     |     |
+ |   6 |  22 | GPIO.22 |   IN | 1 | 31 || 32 | 0 | IN   | GPIO.26 | 26  | 12  |
+ |  13 |  23 | GPIO.23 |   IN | 0 | 33 || 34 |   |      | 0v      |     |     |
+ |  19 |  24 | GPIO.24 |   IN | 0 | 35 || 36 | 0 | IN   | GPIO.27 | 27  | 16  |
+ |  26 |  25 | GPIO.25 |   IN | 0 | 37 || 38 | 0 | IN   | GPIO.28 | 28  | 20  |
+ |     |     |      0v |      |   | 39 || 40 | 0 | IN   | GPIO.29 | 29  | 21  |
+ +-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+
+ | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
+ +-----+-----+---------+------+---+---Pi 4B--+---+------+---------+-----+-----+
+```
+
+Here we use power of 5v, and v- as 0V.
+
+The BME680 and AMG8833 is connected in series I2C with any SDA and SCL pin.
+
+The servo can be connected to any GPIO port.
+
+### Sofware
+
+Firstly install cmake,  the minimum make version is 3.12.4
+
+Then, download and install all Cpp libraries listed below:
+
+- [pigpio](http://abyz.me.uk/rpi/pigpio/download.html)
+- [opencv4.x](https://docs.opencv.org/master/d0/db2/tutorial_macos_install.html)
+- [boost](https://www.boost.org)
+
+**important: please using `make install` to install all libraries and include headers to your `/usr/lib` and `/usr/include` directory, if you want to specify your own library and headers' directory, please modify the `Application/CmakeLists.txt` file.**
+
+Then, make sure your'v  installed python3.7, here we recommend [anaconda](https://www.anaconda.com)
+
+Then, install python packages as **root** by typing:
+
+```shell
+sudo pip3 install adafruit_amg88xx
+sudo pip3 install bme680
+```
+
+Then, you need check the connectivity of hardware, find the i2c address of bme680 and amg8833, in raspberry pi, you may check it by typing:
+
+```shell
+sudo i2cdetect -y 1
+```
+
+change the settings in `Application/main_def.hpp`:
+
+```c++
+#define LOCKER_SERVO_PIN 17   //lock servo port
+#define VIDEO_SERVER_PORT 12345 //video server port
+#define UNIVERSAL_SERVER_PORT 1148 // universal server port
+#define AMG8833_ADDR 0x69 //amg8833 i2c address
+#define BME680_ADDR 0x77 //bme680 i2c address
+```
+
+now you can start your build:
+
+```shell
+cd Application/build
+cmake ..
+make
+```
+
+if succeed, you can excute the application by
+
+```shell
+sudo ./VideoStream
+```
+
+all unit tests can be run in `Application/build/tests/` folder.
+
+## Contributers
+
+[Liangyue Yue 2522553y](https://github.com/Liangyue-1998)
+
+[Jingyan Wang 2533494w](https://github.com/WayenVan)
+
+[Tao Lin 2528179l](https://github.com/brlink)
 
