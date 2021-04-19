@@ -2,32 +2,34 @@
 
 <h1 align="center">
 <img width="64" src="./images/imag.png">
-  SmartHomeSystem
+  [Guardian] the Smart-Home-System
   <br>
   <a href="https://github.com/WayenVan/SmartHomeSystem/issues"><img src="https://img.shields.io/github/issues/WayenVan/SmartHomeSystem" alt="GitHub Issues"></a>
   <a href="https://img.shields.io/github/languages/code-size/WayenVan/SmartHomeSystem"><img src="https://img.shields.io/github/languages/code-size/WayenVan/SmartHomeSystem" alt="Code Size"></a>
   <a href="https://www.gnu.org/licenses/gpl-3.0.en.html"><img src="https://img.shields.io/github/license/healthyhomeuk/healthyhome" alt="License"></a>
   <br>
+    <a href="https://www.youtube.com/watch?v=8SevkU7DxNo"><img width="32" hspace="5" src="./images/youtube.svg"></img></a>
   <a href="https://www.instagram.com/smart_home_system123/"><img width="32" hspace="5" src="./images/instagram.svg"></img></a>
-  <a href="https://twitter.com/home"><img width="32" hspace="5" src="./images/twitter.svg"></img></a>
+  <a href="https://twitter.com/SmartHomeSyste4"><img width="32" hspace="5" src="./images/twitter.svg"></img></a>
 <!--Icons made by https://www.freepik.com Freepik from "https://www.flaticon.com/-->
 </h1> 
 
+
  ## Overview
 
-The SmartHomeSystem is an open source project for multi-functional home monitoring system. It works mainly works as an server with other environment sensors . Users can do either remote monitoring, wirless control and automatic door control in maximums 24 clients(android and java desktop as examples inside the project) simultaneously.
+The Smart-Home-System is an open source project for multi-functional home monitoring system. It works mainly works as an server with other environment sensors . Users can do either remote monitoring, wireless control and automatic door control in maximums 24 clients(android and java desktop as examples inside the project) simultaneously.
 
 ## Project structure
 
-`Android/` is the android application client
+`Android` is the Android application client
 
-`DesktopClinet` is a simple java destop client example based on swing
+`DesktopClinet` is a simple Java desktop client example based on Swing
 
 `PrototypeTest` is some prototype when we try some new ideas
 
-`Application` is the main logic server runing on raspberry pi(T means self contained thread):
+`Application` is the main logic server running on Raspberry PI (T means self contained thread):
 
-<img src="/Users/wayenvan/Desktop/temp/images/structure.svg" alt="./images/structure"  />
+<img src="./images/structure.svg" alt="structure"  />
 
 ## Features
 
@@ -36,7 +38,7 @@ The SmartHomeSystem is an open source project for multi-functional home monitori
 - Indoor gas status monitoring
 - Remote video monitoring with face detection
 - Remote door control
-- Automatic door control by face detection and temperature measuremen
+- Automatic door control by face detection and temperature measurement
 
 ### Advanced
 
@@ -51,14 +53,15 @@ thanks to the independent structure of the server users can get information of s
 
 ## Installation
 
-### hardware
+### Hardware
 
 - [SG90](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf) : Servo
 - [BME680](https://www.bosch-sensortec.com/products/environmental-sensors/gas-sensors/bme680/): gas sensor
 - [AMG8833](https://learn.adafruit.com/adafruit-amg8833-8x8-thermal-camera-sensor): thermal sensor
 - [Raspberry Pi 3 Model B](https://www.raspberrypi.org/products/raspberry-pi-3-model-b/)
+- [Camera](https://www.raspberrypi.org/documentation/hardware/camera/): image capturer
 
-The gpio point of raspberry is list below, remember we are using **BCM** port number:
+The GPIO point of Raspberry is list below, remember we are using **BCM** port number:
 
 ```shell
  +-----+-----+---------+------+---+---Pi 4B--+---+------+---------+-----+-----+
@@ -95,11 +98,11 @@ The BME680 and AMG8833 is connected in series I2C with any SDA and SCL pin.
 
 The servo can be connected to any GPIO port.
 
-### Sofware
+### Software
 
-Firstly install cmake,  the minimum make version is 3.12.4
+Firstly install `CMake`,  the minimum make version is 3.12.4
 
-Then, download and install all Cpp libraries listed below:
+Then, download and install all `CPP` libraries listed below:
 
 - [pigpio](http://abyz.me.uk/rpi/pigpio/download.html)
 - [opencv4.x](https://docs.opencv.org/master/d0/db2/tutorial_macos_install.html)
@@ -107,7 +110,7 @@ Then, download and install all Cpp libraries listed below:
 
 **important: please using `make install` to install all libraries and include headers to your `/usr/lib` and `/usr/include` directory, if you want to specify your own library and headers' directory, please modify the `Application/CmakeLists.txt` file.**
 
-Then, make sure your'v  installed python3.7, here we recommend [anaconda](https://www.anaconda.com)
+Then, make sure you've  installed python3.7, here we recommend [anaconda](https://www.anaconda.com)
 
 Then, install python packages as **root** by typing:
 
@@ -140,7 +143,7 @@ cmake ..
 make
 ```
 
-if succeed, you can excute the application by
+if succeed, you can execute the application by
 
 ```shell
 sudo ./VideoStream
@@ -148,9 +151,9 @@ sudo ./VideoStream
 
 all unit tests can be run in `Application/build/tests/` folder.
 
-## Contributers
+## Contributors
 
-[Liangyue Yue 2522553y](https://github.com/Liangyue-1998)
+[Liangyue Yu 2522553y](https://github.com/Liangyue-1998)
 
 [Jingyan Wang 2533494w](https://github.com/WayenVan)
 
