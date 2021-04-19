@@ -11,6 +11,8 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+cmake-build-debug
+.idea
 
 #vscode
 .vscode
@@ -20,6 +22,8 @@ _deps
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+c_cpp_properties.json
+
 
 # Local History for Visual Studio Code
 .history/
