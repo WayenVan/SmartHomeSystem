@@ -27,7 +27,7 @@ The SmartHomeSystem is an open source project for multi-functional home monitori
 
 `Application` is the main logic server runing on raspberry pi(T means self contained thread):
 
-<img src="/Users/wayenvan/Desktop/temp/images/structure.svg" alt="structure"  />
+<img src="/Users/wayenvan/Desktop/temp/images/structure.svg" alt="./images/structure"  />
 
 ## Features
 
