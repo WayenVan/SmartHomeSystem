@@ -20,6 +20,8 @@ add_executable(server_test server_test.cc)
 target_link_libraries(server_test
     modules
     pthread
+    python3.7m
+    pigpio
 )
 
 target_include_directories(server_test PUBLIC

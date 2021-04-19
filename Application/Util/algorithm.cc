@@ -44,6 +44,7 @@ void drawFaces(Mat& frame, vector<Rect>& faces, const double& scale){
                     Point(cvRound((area.x + area.width - 1) * scale),
                         cvRound((area.y + area.height - 1) * scale)),drawColor
         );
+
     }
 }
 

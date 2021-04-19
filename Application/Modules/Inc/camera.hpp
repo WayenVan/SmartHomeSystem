@@ -38,7 +38,9 @@
 namespace wayenvan{
     
 /** 
- * @brief a simple wrapper of camera, can be used to get frame */
+ * @brief a simple wrapper of camera, can be used to get frame 
+ * using singleton parttern.
+ */
 class Camera{
 
     typedef cv::Mat Mat;
@@ -67,9 +69,9 @@ class Camera{
             throw e;       
         }
         myUtils::share_print("camera open success");
-        std::cout<<cv::getBuildInformation();
-        video_capture_.set(cv::CAP_PROP_AUTO_EXPOSURE,0.25);
-        video_capture_.set(cv::CAP_PROP_EXPOSURE, 0.9);
+        // std::cout<<cv::getBuildInformation();
+        // video_capture_.set(cv::CAP_PROP_AUTO_EXPOSURE,0.25);
+        // video_capture_.set(cv::CAP_PROP_EXPOSURE, 0.9);
 
         int width = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_WIDTH));
         int length = static_cast<int>(this->video_capture_.get(cv::CAP_PROP_FRAME_HEIGHT));

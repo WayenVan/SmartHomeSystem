@@ -24,7 +24,9 @@
 #include<iostream>
 #include<mutex>
 #include<module_exception.hpp>
+#include"../main_defs.hpp"
 
+#define BME680_ADDR 0x77
 
 namespace wayenvan{
 
@@ -49,10 +51,10 @@ class BME680{
      * constructor
      * @brief this initialize all modules by python
      */
-    BME680(size_t addr = 0x77):
+    BME680(size_t addr = BME680_ADDR):
         module_(nullptr),
         sensor_(nullptr),
-        kBME680I2CAddr_(0x77)
+        kBME680I2CAddr_(addr)
     {
         module_ = PyImport_ImportModule("bme680");
 

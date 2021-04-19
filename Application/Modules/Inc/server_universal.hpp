@@ -27,7 +27,7 @@
 namespace wayenvan{
 /**
  * a server which accept universal order from the application, except video
- * using epoll as a NIO with
+ * using epoll as a NIO server
  */
 class ServerUniversal: public CppThread{
     public:

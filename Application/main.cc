@@ -9,19 +9,22 @@
 #include <python3.7m/Python.h>
 #include <pigpio.h>
 
+#include "main_defs.hpp"
+
 using namespace std;
 using namespace wayenvan;
+
 
 int main (){
     Py_Initialize();
     gpioInitialise();
 
     //start all modules
-    LockControl::LockControlPonter lc(new LockControl(17));
+    LockControl::LockControlPonter lc(new LockControl(LOCKER_SERVO_PIN));
     Detector::DetectorPointer detector(new Detector("/home/pi/Documents/opencv/opencv/data/haarcascades/haarcascade_frontalface_default.xml"));
     DetectManager::DetectManagerPointer detect_manager(new DetectManager());
-    ServerVideo::ServerVideoPointer server_video(new ServerVideo("12345"));
-    ServerUniversal::ServerUniversalPointer server_uni(new ServerUniversal("1148"));
+    ServerVideo::ServerVideoPointer server_video(new ServerVideo(VIDEO_SERVER_PORT));
+    ServerUniversal::ServerUniversalPointer server_uni(new ServerUniversal(UNIVERSAL_SERVER_PORT));
 
 
     //register all things 

@@ -22,9 +22,14 @@
 #include<python3.7m/Python.h>
 #include<thread>
 #include<module_exception.hpp>
+#include "../main_defs.hpp"
 
 namespace wayenvan{
 
+/**
+ * @brief a wrapper of amg8833 thermal sensor,
+ * provide method to get themal information
+ */
 class AMG8833{
 
     private:
@@ -37,7 +42,7 @@ class AMG8833{
     /**
      * constructor
      */
-    AMG8833(size_t addr = 0x69):
+    AMG8833(size_t addr = AMG8833_ADDR):
         kAMG8833Addr_(addr)
     {
         //init the class in python

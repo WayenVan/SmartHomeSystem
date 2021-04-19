@@ -23,7 +23,10 @@
 
 namespace wayenvan{
 
-
+/**
+ * a video server provide frame to all clients,
+ * using epoll as NIO
+ */
 class ServerVideo: public CppThread{
 
     public:
