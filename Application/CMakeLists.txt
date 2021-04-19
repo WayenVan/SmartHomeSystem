@@ -6,20 +6,18 @@ add_executable(${PROJECT_NAME} main.cc)
 
 #opencv lib
 find_package(OpenCV REQUIRED)
-target_link_libraries(${PROJECT_NAME} 
-    ${OpenCV_LIBS}
-)
 
 #modules library
 add_subdirectory(Modules)
-target_link_libraries(${PROJECT_NAME}
-    modules
-)
 
 #myUtils library
 add_subdirectory(Util)
+
 target_link_libraries(${PROJECT_NAME}
+    modules
     myUtils
+    ${OpenCV_LIBS}
+    python3.7m
 )
 
 

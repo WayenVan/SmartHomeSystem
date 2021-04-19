@@ -1,3 +1,20 @@
+/* 
+ * This file is part of the SmartHomeSystem distribution (https://github.com/WayenVan/SmartHomeSystem).
+ * Copyright (c) 2021 Jingyan Wang.
+ * 
+ * This program is free software: you can redistribute it and/or modify  
+ * it under the terms of the GNU General Public License as published by  
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include<server_universal.hpp>
 #include <stdio.h>
 #include <stdlib.h>
@@ -306,6 +323,11 @@ int ServerUniversal::handleInstruction(const int& socket, const int& instruction
   }else if(instruction == 0x13){
     double press = gas_sensor_->getPressure();
     return sendData(socket, press);
+  }else if(instruction == 0x15){
+    lock_control_ -> notify();
+  }else if(instruction == 0x16){
+    LockControl::State state = lock_control_->get_state();
+    return sendData(socket, state == LockControl::LOCK_STATE_OPENING);
   }
   
   return 0;
@@ -313,8 +335,8 @@ int ServerUniversal::handleInstruction(const int& socket, const int& instruction
 
 int ServerUniversal::sendData(const int& socket, const double& data){
 
-  int data_temp = data * 1000;
-
+  int data_temp = data * 1000.0;
+  myUtils::share_print(std::to_string(data_temp));
   while(1){
 
     int count = 0;

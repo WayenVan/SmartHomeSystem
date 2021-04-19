@@ -68,6 +68,7 @@ add_executable(server_universal_test server_universal_test.cc)
 target_link_libraries(server_universal_test
     modules
     python3.7m
+    pigpio
 )
 
 target_include_directories(server_universal_test PUBLIC
