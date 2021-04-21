@@ -20,7 +20,7 @@ public class LockerControl implements Runnable{
     public LockerControl(HomePage homePage) throws IOException {
         this.homePage = homePage;
         // Create a stream socket and connect it to the port and IP address
-        this.socket = new Socket("192.168.0.104", 1148);
+        this.socket = new Socket("192.168.0.100", 1148);
         // get the output stream
         this.os = socket.getOutputStream();
     }

@@ -24,6 +24,8 @@ public class HomePage extends JFrame implements ActionListener {
     private JLabel labelHumi = new JLabel();
     private JLabel labelPres = new JLabel();
     private JPanel panel = new JPanel();
+    private String host = JOptionPane.showInputDialog("Please input the host");
+    private String port = JOptionPane.showInputDialog("Please input the port");
     private static int lastStatus = 0;
 
     public HomePage() throws HeadlessException {
@@ -130,7 +132,9 @@ public class HomePage extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == unlock) {
             try {
-                Socket socket = new Socket("192.168.0.104", 1148);
+                // host: 192.168.0.100 port: 12345
+                String host = getHost();
+                Socket socket = new Socket(host, 1148);
                 // Output stream
                 OutputStream os = socket.getOutputStream();
                 int mark = 0x15;
@@ -156,5 +160,19 @@ public class HomePage extends JFrame implements ActionListener {
         lastStatus = status;
     }
 
+    public String getHost() {
+        return host;
+    }
 
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
 }
