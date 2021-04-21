@@ -21,9 +21,16 @@ public class VideoHandler implements Runnable{
 
         public VideoHandler(HomePage homePage) throws IOException {
             this.homePage = homePage;
-            this.socket = new Socket("192.168.0.104",12345);
+
+            // host: 192.168.0.100 port: 12345
+            String host = homePage.getHost();
+            String strPort = homePage.getPort();
+            int port = Integer.parseInt(strPort);
+
+            this.socket = new Socket(host,port);
             this.socket.setSoTimeout(500);
         }
+
 
     @Override
         public void run() {
